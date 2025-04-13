@@ -1,0 +1,92 @@
+﻿@model API_Cosumes.Models.UserModel
+
+@{
+    ViewData["Title"] = "CREATE";
+}
+
+<h1>Add / Edit User</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Save">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            @Html.HiddenFor(x=>x.UserId)
+            <div class="form-group">
+                <label>Select State</label>
+                <select class="form-control" asp-for="StateID" asp-items="@(new SelectList(ViewBag.StateList,"StateID","StateName"))" onchange="fnOnStateChange();">
+                    <option value="">Select State</option>
+                </select>
+                <span asp-validation-for="StateID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Select City</label>
+                <select class="form-control" asp-for="CityID" asp-items="@(new SelectList(ViewBag.CityList,"CityID","CityName"))">
+                    <option value="">Select City</option>
+                </select>
+                <span asp-validation-for="CityID" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Contact" class="control-label"></label>
+                <input asp-for="Contact" class="form-control" />
+                <span asp-validation-for="Contact" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2">
+              
+                <button asp-action="Save" class="btn btn-primary mx-2">Save</button>
+                <a class="btn btn-danger" asp-action="GET">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        function fnOnStateChange() {
+
+            var StateID = $("#StateID").val();
+            console.log("StateID = ", StateID);
+            if (StateID !== "") {
+                $("#CityID").empty();
+                $("#CityID").append($("<option></option>").val("").html("Select City"));
+                $.ajax(
+                    {
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        url: "@Url.Action("GET_CITY_BY_StateID","User")" + "?&StateID=" + StateID,
+                        data: {},
+                        dataType: "json",
+                        success: function (Result) {
+                            $.each(Result,
+                                function (key, value) {
+                                    $("#CityID").append($("<option></option>").val(value.cityID).html(value.cityName));
+                                }
+                            );
+                        },
+                        error: function (r) {
+                            alert("Error While Loading Dropdown!");
+                        }
+                    }
+                );
+            }
+            else {
+                $("StateID").empty();
+                $("StateID").append($("<option></option>").val("").html("Select State"));
+            }
+        }
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
